@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link rel="shortcut icon" href="images/logo.png">
+<title>QuadSelector - Online Quadrilateral Selecting Game</title>
+<script src="https://cdn.jsdelivr.net/npm/p5@1.7.0/lib/p5.js"></script>
+</head>
+<body>
+<script>
+let shapes = [];
+let targetShapes = [];
+let level = 1;
+let selectedCount = 0;
+let score = 0;
+
+function setup() {
+  createCanvas(700, 670);
+  generateShapes(level);
+}
+
+function draw() {
+  background(220);
+  fill(0);
+  textSize(40);
+  text("QuadSelector - Online Quadrilateral \nSelecting Game", 20, 30);
+  textSize(32);
+  text("Level: " + level + "                      Score: " + score, 20, 110);
+  textSize(20);
+  text("Instructions: \nSelect the quadrilaterals. \nIf you select a quadrilateral, you level up. \nIf you don't you try again.", 20, 130);
+
+  // Display shapes
+  for (let shape of shapes) {
+    shape.display();
+  }
+}
+function mousePressed() {
+  for (let shape of shapes) {
+    if (shape.contains(mouseX, mouseY) && !shape.isSelected) {
+      shape.isSelected = true;
+
+      if (shape instanceof Parallelogram || shape instanceof Rectangle || shape instanceof Trapezium || shape instanceof Rhombus) {
+        selectedCount++;
+        if (selectedCount === 1) {
+          level++;
+          score += 2;
+          generateShapes(level);
+          selectedCount = 0;
+        }
+      } else {
+        // Reset the game if an incorrect shape is clicked
+        selectedCount = 0;
+        generateShapes(level);
+      }
+
+      break;
+    }
+  }
+}
+
+function generateShapes(numShapes) {
+  shapes = [];
+  targetShapes = [];
+
+  let shapeTypes = ['rectangle', 'trapezium', 'parallelogram', 'rhombus', 'triangle', 'circle'];
+
+  for (let i = 0; i < numShapes + 3; i++) {
+    let x = random(width - 50);
+    let y = random(height - 50);
+    let type = random(shapeTypes);
+    let shape;
+
+    if (type === 'rectangle') {
+      let w = random(30, 80);
+      let h = random(30, 80);
+      shape = new Rectangle(x, y, w, h);
+    } else if (type === 'trapezium') {
+      let w = random(30, 80);
+      let h = random(30, 80);
+      shape = new Trapezium(x, y, w, h);
+    } else if (type === 'parallelogram') {
+      let w = random(30, 80);
+      let h = random(30, 80);
+      shape = new Parallelogram(x, y, w, h);
+    } else if (type === 'rhombus') {
+      let d = random(30, 80);
+      shape = new Rhombus(x, y, d);
+    } else if (type === 'triangle') {
+      let s = random(30, 80);
+      shape = new Triangle(x, y, s);
+    } else if (type === 'circle') {
+      let r = random(15, 40);
+      shape = new Circle(x, y, r);
+    }
+
+    shapes.push(shape);
+  }
+
+  // Select four random shapes as targets
+  targetShapes = random(shapes, 4);
+  for (let shape of targetShapes) {
+    shape.isTarget = true;
+  }
+}
+
+// Define shape classes and methods as before...
+
+class Shape {
+  constructor(x, y) {
+    this.x = x;
+    this.y = y;
+    this.isTarget = false;
+    this.isSelected = false;
+  }
+
+  display() {
+    noStroke();
+    if (this.isTarget) {
+      fill(random(0, 255), random(0, 255), random(0, 255));
+    }
+  }
+
+  contains(px, py) {
+    return false;
+  }
+}
+
+class Rectangle extends Shape {
+  constructor(x, y, w, h) {
+    super(x, y);
+    this.w = w;
+    this.h = h;
+  }
+
+  display() {
+    super.display();
+    rect(this.x, this.y, this.w, this.h);
+  }
+
+  contains(px, py) {
+    return px > this.x && px < this.x + this.w &&
+           py > this.y && py < this.y + this.h;
+  }
+}
+
+class Trapezium extends Shape {
+  constructor(x, y, w, h) {
+    super(x, y);
+    this.w = w;
+    this.h = h;
+  }
+
+  display() {
+    super.display();
+    beginShape();
+    vertex(this.x, this.y);
+    vertex(this.x + this.w, this.y);
+    vertex(this.x + this.w * 0.8, this.y + this.h);
+    vertex(this.x + this.w * 0.2, this.y + this.h);
+    endShape(CLOSE);
+  }
+
+  contains(px, py) {
+    let yTop = this.y;
+    let yBottom = this.y + this.h;
+    let xLeftBase = this.x + (this.w - this.w * 0.8) / 2;
+    let xRightBase = this.x + this.w - (this.w - this.w * 0.8) / 2;
+
+    if (py > yTop && py < yBottom) {
+      let xLeft = lerp(this.x, xLeftBase, (py - yTop) / this.h);
+      let xRight = lerp(this.x + this.w, xRightBase, (py - yTop) / this.h);
+
+      if (px > xLeft && px < xRight) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+}
+
+class Parallelogram extends Shape {
+  constructor(x, y, w, h) {
+    super(x, y);
+    this.w = w;
+    this.h = h;
+  }
+
+  display() {
+    super.display();
+    beginShape();
+    vertex(this.x, this.y);
+    vertex(this.x + this.w, this.y);
+    vertex(this.x + this.w * 0.8, this.y + this.h);
+    vertex(this.x + 0.2 * this.w, this.y + this.h);
+    endShape(CLOSE);
+  }
+
+  contains(px, py) {
+    let yTop = this.y;
+    let yBottom = this.y + this.h;
+    let xLeftBase = this.x + this.w * 0.2;
+    let xRightBase = this.x + this.w;
+
+    if (py > yTop && py < yBottom) {
+      let xLeft = lerp(this.x, xLeftBase, (py - yTop) / this.h);
+      let xRight = lerp(this.x + this.w, xRightBase, (py - yTop) / this.h);
+
+      if (px > xLeft && px < xRight) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+}
+
+class Rhombus extends Shape {
+  constructor(x, y, d) {
+    super(x, y);
+    this.d = d;
+  }
+
+  display() {
+    super.display();
+    beginShape();
+    vertex(this.x, this.y);
+    vertex(this.x + this.d * 0.5, this.y + this.d * 0.5);
+    vertex(this.x, this.y + this.d);
+    vertex(this.x - this.d * 0.5, this.y + this.d * 0.5);
+    endShape(CLOSE);
+  }
+
+  contains(px, py) {
+    let dx = px - this.x;
+    let dy = py - this.y;
+    return (abs(dx / 0.5) + abs(dy / 0.5)) <= this.d;
+  }
+}
+
+class Triangle extends Shape {
+  constructor(x, y, s) {
+    super(x, y);
+    this.s = s;
+  }
+
+  display() {
+    super.display();
+    triangle(this.x, this.y + this.s, this.x + this.s, this.y + this.s, this.x + this.s * 0.5, this.y);
+  }
+
+  contains(px, py) {
+    let v0 = createVector(this.x, this.y + this.s);
+    let v1 = createVector(this.x + this.s, this.y + this.s);
+    let v2 = createVector(this.x + this.s * 0.5, this.y);
+    let barycentric = getBarycentricCoordinates(createVector(px, py), v0, v1, v2);
+    return (
+      barycentric.x >= 0 && barycentric.y >= 0 && barycentric.z >= 0
+    );
+  }
+}
+
+class Circle extends Shape {
+  constructor(x, y, r) {
+    super(x, y);
+    this.r = r;
+  }
+
+  display() {
+    super.display();
+    ellipse(this.x, this.y, this.r * 2);
+  }
+
+  contains(px, py) {
+    let d = dist(px, py, this.x, this.y);
+    return d <= this.r;
+  }
+}
+
+// Add the following helper function for barycentric coordinates
+
+function getBarycentricCoordinates(p, a, b, c) {
+  let v0 = p5.Vector.sub(b, a);
+  let v1 = p5.Vector.sub(c, a);
+  let v2 = p5.Vector.sub(p, a);
+
+  let dot00 = v0.dot(v0);
+  let dot01 = v0.dot(v1);
+  let dot02 = v0.dot(v2);
+  let dot11 = v1.dot(v1);
+  let dot12 = v1.dot(v2);
+
+  let invDenom = 1.0 / (dot00 * dot11 - dot01 * dot01);
+  let u = (dot11 * dot02 - dot01 * dot12) * invDenom;
+  let v = (dot00 * dot12 - dot01 * dot02) * invDenom;
+
+  return createVector(u, v, 1.0 - u - v);
+}
+</script>
+</body>
+
+</html>
