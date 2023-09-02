@@ -84,6 +84,16 @@ function decreaseTime() {
     countdown = 0;
     if (countdown === 0) {
       alert("GAME OVER.\nYou scored " + score + " quadrilaterals in 1 minute.");
+      let replaybutton = createButton('PLAY AGAIN');
+      replaybutton.position(250, 300);
+      replaybutton.style('font-size', '32px');
+      replaybutton.style('background-color', 'red');
+      replaybutton.style('color', 'white');
+      replaybutton.style('cursor', 'pointer');
+      replaybutton.size(200, 100);
+      replaybutton.mousePressed(function() {
+        window.location.reload();
+      });
     }
   }
 }
