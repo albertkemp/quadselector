@@ -7,19 +7,41 @@
 </head>
 <body>
 <script>
+let countdown = 60; // Set the initial countdown duration in seconds
+let timerInterval;
 let shapes = [];
 let targetShapes = [];
 let level = 1;
 let selectedCount = 0;
 let score = 0;
+let d = 0; // Initialize 'd' to zero
+
+let playbutton;
+let playtext;
 
 function setup() {
   createCanvas(700, 670);
   generateShapes(level);
+  textSize(32);
+  
+  // Create and position the PLAY button and text
+  playbutton = createButton('PLAY');
+  playbutton.position(250, 300);
+  playbutton.size(200, 100);
+  playbutton.style('background-color', 'green');
+  playbutton.style('color', 'white');
+  playbutton.style('font-size', '70px');
+  playbutton.style('cursor', 'pointer');
+  playbutton.mousePressed(startTimer);
 }
 
 function draw() {
   background(220);
+  fill(61, 51, 255);
+  rect(600, 100, 200, 100);
+  textSize(32);
+  fill(255);
+  text(formatTime(countdown), 610, 150);
   fill(0);
   textSize(40);
   text("QuadSelector - Online Quadrilateral \nSelecting Game", 20, 30);
@@ -27,12 +49,36 @@ function draw() {
   text("Level: " + level + "                      Score: " + score, 20, 110);
   textSize(20);
   text("Instructions: \nSelect the quadrilaterals. \nIf you select a quadrilateral, you level up. \nIf you don't you try again.", 20, 130);
-
+  fill(121, 50, 168);
+  
   // Display shapes
   for (let shape of shapes) {
     shape.display();
   }
 }
+
+function startTimer() {
+  playbutton.hide();
+  timerInterval = setInterval(decreaseTime, 1000); // Decrease countdown every second
+}
+
+function decreaseTime() {
+  countdown--;
+  if (countdown < 0) {
+    clearInterval(timerInterval); // Stop the timer when countdown reaches 0
+    countdown = 0;
+    if (countdown === 0) {
+      alert("GAME OVER.\nYou scored " + score + " quadrilaterals in 1 minute.");
+    }
+  }
+}
+
+function formatTime(seconds) {
+  let minutes = floor(seconds / 60);
+  let remainingSeconds = seconds % 60;
+  return nf(minutes, 2) + ":" + nf(remainingSeconds, 2);
+}
+
 function mousePressed() {
   for (let shape of shapes) {
     if (shape.contains(mouseX, mouseY) && !shape.isSelected) {
@@ -42,7 +88,7 @@ function mousePressed() {
         selectedCount++;
         if (selectedCount === 1) {
           level++;
-          score += 2;
+          score++;
           generateShapes(level);
           selectedCount = 0;
         }
@@ -50,6 +96,16 @@ function mousePressed() {
         // Reset the game if an incorrect shape is clicked
         selectedCount = 0;
         generateShapes(level);
+
+        // Add a pentagon or hexagon for incorrect click
+        let x = random(width - 50);
+        let y = random(height - 50);
+        let s = random(30, 80);
+        if (random() > 0.5) {
+          shapes.push(new Pentagon(x, y, s));
+        } else {
+          shapes.push(new Hexagon(x, y, s));
+        }
       }
 
       break;
@@ -61,12 +117,22 @@ function generateShapes(numShapes) {
   shapes = [];
   targetShapes = [];
 
-  let shapeTypes = ['rectangle', 'trapezium', 'parallelogram', 'rhombus', 'triangle', 'circle'];
+  let shapeTypes = ['rectangle', 'trapezium', 'parallelogram', 'rhombus', 'triangle', 'circle', 'pentagon', 'hexagon'];
+
+  let hasQuadrilateral = false;
 
   for (let i = 0; i < numShapes + 3; i++) {
     let x = random(width - 50);
     let y = random(height - 50);
-    let type = random(shapeTypes);
+    let type;
+
+    if (!hasQuadrilateral) {
+      type = 'rectangle'; // Ensure there is at least one quadrilateral at the start.
+      hasQuadrilateral = true;
+    } else {
+      type = random(shapeTypes);
+    }
+
     let shape;
 
     if (type === 'rectangle') {
@@ -90,6 +156,12 @@ function generateShapes(numShapes) {
     } else if (type === 'circle') {
       let r = random(15, 40);
       shape = new Circle(x, y, r);
+    } else if (type === 'pentagon') {
+      let s = random(30, 80);
+      shape = new Pentagon(x, y, s);
+    } else if (type === 'hexagon') {
+      let s = random(30, 80);
+      shape = new Hexagon(x, y, s);
     }
 
     shapes.push(shape);
@@ -101,6 +173,11 @@ function generateShapes(numShapes) {
     shape.isTarget = true;
   }
 }
+
+// Define shape classes and methods as before...
+
+// (The rest of the code for shape classes and getBarycentricCoordinates function is unchanged)
+
 
 // Define shape classes and methods as before...
 
@@ -294,6 +371,47 @@ function getBarycentricCoordinates(p, a, b, c) {
   let v = (dot00 * dot12 - dot01 * dot02) * invDenom;
 
   return createVector(u, v, 1.0 - u - v);
+}
+class Pentagon extends Shape {
+  constructor(x, y, s) {
+    super(x, y);
+    this.s = s;
+  }
+
+  display() {
+    super.display();
+    beginShape();
+    for (let i = 0; i < 5; i++) {
+      let angle = TWO_PI * i / 5;
+      let px = this.x + this.s * cos(angle);
+      let py = this.y + this.s * sin(angle);
+      vertex(px, py);
+    }
+    endShape(CLOSE);
+  }
+
+  // Implement the contains() method for pentagons...
+}
+
+class Hexagon extends Shape {
+  constructor(x, y, s) {
+    super(x, y);
+    this.s = s;
+  }
+
+  display() {
+    super.display();
+    beginShape();
+    for (let i = 0; i < 6; i++) {
+      let angle = TWO_PI * i / 6;
+      let px = this.x + this.s * cos(angle);
+      let py = this.y + this.s * sin(angle);
+      vertex(px, py);
+    }
+    endShape(CLOSE);
+  }
+
+  // Implement the contains() method for hexagons...
 }
 </script>
 </body>
