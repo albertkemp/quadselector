@@ -7,7 +7,11 @@
 </head>
 <body>
 <script>
-let countdown = 60; // Set the initial countdown duration in seconds
+  //Amazing QuadSelector Code
+  ///
+  //Variables declared:
+  ///
+  let countdown = 60; // Set the initial countdown duration in seconds
 let timerInterval;
 let shapes = [];
 let targetShapes = [];
@@ -15,10 +19,11 @@ let level = 1;
 let selectedCount = 0;
 let score = 0;
 let d = 0; // Initialize 'd' to zero
+let backgroundColor = 220;
 
 let playbutton;
 let playtext;
-
+//Setup function
 function setup() {
   createCanvas(700, 670);
   generateShapes(level);
@@ -34,9 +39,19 @@ function setup() {
   playbutton.style('cursor', 'pointer');
   playbutton.mousePressed(startTimer);
 }
-
+  ///
+//Draw function
+  ///
 function draw() {
-  background(220);
+  background(backgroundColor);
+  textSize(25);
+  fill(0);
+  text("TIMER", 610, 95);
+  fill(196, 0, 0);
+  rect(0, 600, 700, 80);
+  fill(255);
+  textSize(20);
+  text("ℹ️ There is a timer on the left in case you didn't know, and remember to read\nthe instructions.", 15, 630);
   fill(61, 51, 255);
   rect(600, 100, 200, 100);
   textSize(32);
@@ -56,7 +71,7 @@ function draw() {
     shape.display();
   }
 }
-
+//Timer
 function startTimer() {
   playbutton.hide();
   timerInterval = setInterval(decreaseTime, 1000); // Decrease countdown every second
@@ -91,12 +106,15 @@ function mousePressed() {
           score++;
           generateShapes(level);
           selectedCount = 0;
+          backgroundColor = color(131, 247, 131);
+          setTimeout(backgroundToGrey, 300);
         }
       } else {
         // Reset the game if an incorrect shape is clicked
         selectedCount = 0;
         generateShapes(level);
-
+        backgroundColor = color(250, 137, 137);
+        setTimeout(backgroundToGrey, 300);
         // Add a pentagon or hexagon for incorrect click
         let x = random(width - 50);
         let y = random(height - 50);
@@ -412,6 +430,9 @@ class Hexagon extends Shape {
   }
 
   // Implement the contains() method for hexagons...
+}
+function backgroundToGrey() {
+  backgroundColor = 220;
 }
 </script>
 </body>
